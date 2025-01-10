@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Army Institute of Technology, Pune - Smart Navigation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #000;
+        }
+        header {
+            background-color: rgba(0, 33, 71, 0.8);
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: rgba(51, 51, 51, 0.8);
+            padding: 0.5rem 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+        }
+        nav a:hover {
+            background-color: rgba(0, 33, 71, 0.8);
+        }
+        #search-bar {
+            margin: 1rem;
+            text-align: center;
+        }
+        #map {
+            height: 500px;
+            margin-top: 1rem;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: rgba(0, 33, 71, 0.8);
+            color: white;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOfOwx4Iiqube3_q4OYFKht1cdYUjK_Eg"></script>
+    <script>
+        function initMap() {
+            const aitCenter = { lat: 18.6070, lng: 73.8750 };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 18,
+                center: aitCenter,
+            });
+
+            const locations = [
+                { name: "ENTC Department", position: { lat: 18.60736, lng: 73.87516 }, icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
+                { name: "Computer Department", position: { lat: 18.60728, lng: 73.87563 }, icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' },
+                { name: "IT Department", position: { lat: 18.60646, lng: 73.87523 }, icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' },
+                { name: "Mechanical Department", position: { lat: 18.60698, lng: 73.87623 }, icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png' },
+                { name: "AIT Fountain", position: { lat: 18.60696, lng: 73.87461 }, icon: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png' },
+                { name: "Squash Court", position: { lat: 18.60455, lng: 73.87475 }, icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png' },
+                { name: "Cricket Ground", position: { lat: 18.60537, lng: 73.87527 }, icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
+                { name: "Football Ground", position: { lat: 18.60564, lng: 73.87428 }, icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' },
+                { name: "Kabaddi Court", position: { lat: 18.60493, lng: 73.874 }, icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' },
+                { name: "Volleyball Court", position: { lat: 18.60496, lng: 73.87431 }, icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png' },
+                { name: "Aryabhatta Library", position: { lat: 18.60604, lng: 73.87518 }, icon: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png' },
+            ];
+
+            const markers = locations.map(location => {
+                const marker = new google.maps.Marker({
+                    position: location.position,
+                    map,
+                    title: location.name,
+                    icon: location.icon,
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h3>${location.name}</h3>`
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open({ anchor: marker, map, shouldFocus: false });
+                });
+
+                return marker;
+            });
+
+            const searchInput = document.getElementById("search-input");
+            document.getElementById("search-btn").addEventListener("click", () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                const found = locations.find(loc => loc.name.toLowerCase().includes(searchTerm));
+                if (found) {
+                    map.setCenter(found.position);
+                    map.setZoom(19);
+                } else {
+                    alert("Location not found!");
+                }
+            });
+        }
+    </script>
+</head>
+<body onload="initMap()">
+    <header>
+        <h1>Army Institute of Technology, Pune</h1>
+        <p>Smart Campus Navigation System</p>
+    </header>
+
+    <div id="search-bar">
+        <input type="text" id="search-input" placeholder="Search for a location..." />
+        <button id="search-btn">Search</button>
+    </div>
+
+    <main>
+        <section id="map"></section>
+    </main>
+
+    <footer>
+        &copy; 2025 Army Institute of Technology, Pune. All rights reserved.
+    </footer>
+</body>
+</html>
