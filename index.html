@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,13 +32,14 @@
         nav a:hover {
             background-color: rgba(0, 33, 71, 0.8);
         }
-        #search-bar {
-            margin: 1rem;
-            text-align: center;
+        main {
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #000;
         }
         #map {
             height: 500px;
-            margin-top: 1rem;
+            margin-top: 2rem;
         }
         footer {
             text-align: center;
@@ -47,36 +47,65 @@
             background-color: rgba(0, 33, 71, 0.8);
             color: white;
         }
+        #directions {
+            margin-top: 1rem;
+            background-color: rgba(240, 240, 240, 0.9);
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        input, button {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOfOwx4Iiqube3_q4OYFKht1cdYUjK_Eg"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOfOwx4Iiqube3_q4OYFKht1cdYUjK_Eg&libraries=places"></script>
     <script>
+        let map, directionsService, directionsRenderer, autocompleteFrom, autocompleteTo;
+
+        const locations = [
+            { name: "ENTC Department", position: { lat: 18.60736, lng: 73.87516 } },
+            { name: "Computer Department", position: { lat: 18.60728, lng: 73.87563 } },
+            { name: "IT Department", position: { lat: 18.60646, lng: 73.87523 } },
+            { name: "Mechanical Department", position: { lat: 18.60698, lng: 73.87623 } },
+            { name: "AIT Fountain", position: { lat: 18.60696, lng: 73.87461 } },
+            { name: "Squash Court", position: { lat: 18.60455, lng: 73.87475 } },
+            { name: "Cricket Ground", position: { lat: 18.60537, lng: 73.87527 } },
+            { name: "Football Ground", position: { lat: 18.60564, lng: 73.87428 } },
+            { name: "Kabaddi Court", position: { lat: 18.60493, lng: 73.874 } },
+            { name: "Volleyball Court", position: { lat: 18.60496, lng: 73.87431 } },
+            { name: "Aryabhatta Library", position: { lat: 18.60604, lng: 73.87518 } },
+        ];
+
         function initMap() {
             const aitCenter = { lat: 18.6070, lng: 73.8750 };
-            const map = new google.maps.Map(document.getElementById("map"), {
+            map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 18,
                 center: aitCenter,
             });
 
-            const locations = [
-                { name: "ENTC Department", position: { lat: 18.60736, lng: 73.87516 }, icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
-                { name: "Computer Department", position: { lat: 18.60728, lng: 73.87563 }, icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' },
-                { name: "IT Department", position: { lat: 18.60646, lng: 73.87523 }, icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' },
-                { name: "Mechanical Department", position: { lat: 18.60698, lng: 73.87623 }, icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png' },
-                { name: "AIT Fountain", position: { lat: 18.60696, lng: 73.87461 }, icon: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png' },
-                { name: "Squash Court", position: { lat: 18.60455, lng: 73.87475 }, icon: 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png' },
-                { name: "Cricket Ground", position: { lat: 18.60537, lng: 73.87527 }, icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
-                { name: "Football Ground", position: { lat: 18.60564, lng: 73.87428 }, icon: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' },
-                { name: "Kabaddi Court", position: { lat: 18.60493, lng: 73.874 }, icon: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png' },
-                { name: "Volleyball Court", position: { lat: 18.60496, lng: 73.87431 }, icon: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png' },
-                { name: "Aryabhatta Library", position: { lat: 18.60604, lng: 73.87518 }, icon: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png' },
-            ];
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
 
-            const markers = locations.map(location => {
+            // Initialize autocomplete for input fields
+            autocompleteFrom = new google.maps.places.Autocomplete(
+                document.getElementById("from"),
+                { fields: ["name", "geometry"], types: ["establishment"] }
+            );
+            autocompleteTo = new google.maps.places.Autocomplete(
+                document.getElementById("to"),
+                { fields: ["name", "geometry"], types: ["establishment"] }
+            );
+
+            // Add markers for campus locations
+            locations.forEach(location => {
                 const marker = new google.maps.Marker({
                     position: location.position,
                     map,
                     title: location.name,
-                    icon: location.icon,
                 });
 
                 const infoWindow = new google.maps.InfoWindow({
@@ -86,21 +115,33 @@
                 marker.addListener("click", () => {
                     infoWindow.open({ anchor: marker, map, shouldFocus: false });
                 });
-
-                return marker;
             });
+        }
 
-            const searchInput = document.getElementById("search-input");
-            document.getElementById("search-btn").addEventListener("click", () => {
-                const searchTerm = searchInput.value.toLowerCase();
-                const found = locations.find(loc => loc.name.toLowerCase().includes(searchTerm));
-                if (found) {
-                    map.setCenter(found.position);
-                    map.setZoom(19);
-                } else {
-                    alert("Location not found!");
-                }
-            });
+        function calculateRoute() {
+            const fromValue = document.getElementById("from").value;
+            const toValue = document.getElementById("to").value;
+
+            if (fromValue && toValue) {
+                const fromLocation = locations.find(loc => loc.name === fromValue).position;
+                const toLocation = locations.find(loc => loc.name === toValue).position;
+
+                const request = {
+                    origin: fromLocation,
+                    destination: toLocation,
+                    travelMode: google.maps.TravelMode.WALKING
+                };
+
+                directionsService.route(request, (result, status) => {
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        directionsRenderer.setDirections(result);
+                    } else {
+                        alert("Directions request failed due to " + status);
+                    }
+                });
+            } else {
+                alert("Please enter both starting and ending locations.");
+            }
         }
     </script>
 </head>
@@ -110,13 +151,41 @@
         <p>Smart Campus Navigation System</p>
     </header>
 
-    <div id="search-bar">
-        <input type="text" id="search-input" placeholder="Search for a location..." />
-        <button id="search-btn">Search</button>
-    </div>
+    <nav>
+        <a href="#map">Campus Map</a>
+        <a href="#locations">Important Locations</a>
+    </nav>
 
     <main>
         <section id="map"></section>
+
+        <section id="directions">
+            <h2>Find Your Route</h2>
+            <label for="from">From:</label>
+            <input id="from" type="text" placeholder="Enter starting location">
+            <br>
+            <label for="to">To:</label>
+            <input id="to" type="text" placeholder="Enter destination">
+            <br>
+            <button onclick="calculateRoute()">Get Directions</button>
+        </section>
+
+        <section id="locations" class="locations">
+            <h2>Important Locations</h2>
+            <ul>
+                <li><strong>ENTC Department:</strong> Coordinates (18.60736, 73.87516)</li>
+                <li><strong>Computer Department:</strong> Coordinates (18.60728, 73.87563)</li>
+                <li><strong>IT Department:</strong> Coordinates (18.60646, 73.87523)</li>
+                <li><strong>Mechanical Department:</strong> Coordinates (18.60698, 73.87623)</li>
+                <li><strong>AIT Fountain:</strong> Coordinates (18.60696, 73.87461)</li>
+                <li><strong>Squash Court:</strong> Coordinates (18.60455, 73.87475)</li>
+                <li><strong>Cricket Ground:</strong> Coordinates (18.60537, 73.87527)</li>
+                <li><strong>Football Ground:</strong> Coordinates (18.60564, 73.87428)</li>
+                <li><strong>Kabaddi Court:</strong> Coordinates (18.60493, 73.874)</li>
+                <li><strong>Volleyball Court:</strong> Coordinates (18.60496, 73.87431)</li>
+                <li><strong>Aryabhatta Library:</strong> Coordinates (18.60604, 73.87518)</li>
+            </ul>
+        </section>
     </main>
 
     <footer>
