@@ -14,7 +14,7 @@ function App() {
   }, []);
 
   return (
-    <LoadScript googleMapsApiKey="YOUR_GOOGLE_MAPS_API_KEY" libraries={['places']}>
+    <LoadScript googleMapsApiKey="AIzaSyD4EXAMPLE12345678lghfj-WXYZ" libraries={['places']}>
       <h1>AIT Smart Campus Navigation</h1>
       <SearchForm locations={locations} setDirections={setDirections} />
       <MapComponent locations={locations} directions={directions} />
